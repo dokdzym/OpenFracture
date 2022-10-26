@@ -79,9 +79,8 @@ public class EdgeConstraint
         return !lhs.Equals(rhs);
     }
 
-    [ExcludeFromCoverage]
     public override string ToString()
     {
-        return $"Edge: T{t1}->T{t2} (V{v1}->V{v2})";
+        return string.Format("Edge: T{0}->T{1} (V{2}->V{3})", t1, t2, v1, v2);
     }
 }

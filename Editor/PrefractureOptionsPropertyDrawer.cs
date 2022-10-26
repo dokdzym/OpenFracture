@@ -14,7 +14,8 @@ public class PrefractureOptionsPropertyDrawer : PropertyDrawer
         var saveLocation = property.FindPropertyRelative("saveLocation");
 
         EditorGUI.indentLevel = 0;
-        foldout = EditorGUILayout.BeginFoldoutHeaderGroup(foldout, label);
+//        foldout = EditorGUILayout.BeginFoldoutHeaderGroup(foldout, label);
+        foldout = EditorGUILayout.BeginToggleGroup("PrefractureOptionsPropertyDrawer", foldout);//brandotodo
 
         if (foldout)
         {
@@ -53,7 +54,8 @@ public class PrefractureOptionsPropertyDrawer : PropertyDrawer
             GUILayout.Space(4);
         }
 
-        EditorGUILayout.EndFoldoutHeaderGroup();
+//        EditorGUILayout.EndFoldoutHeaderGroup();
+        EditorGUILayout.EndToggleGroup();
         EditorGUI.indentLevel = 0;
     }
     

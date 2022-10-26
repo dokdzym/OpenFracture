@@ -19,6 +19,7 @@ public class CallbackOptions
 
     public void CallOnFracture(Collider instigator, GameObject fracturedObject, Vector3 point)
     {
-        onFracture?.Invoke(instigator, fracturedObject, point);
+        if(onFracture != null)
+            onFracture.Invoke(instigator, fracturedObject, point);
     }
 }

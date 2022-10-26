@@ -48,9 +48,8 @@ public struct Quad
         this.t2R = t2R;
     }
 
-    [ExcludeFromCoverage]
     public override string ToString()
     {
-        return $"T{t1}/T{t2} (V{q1},V{q2},V{q3},V{q4})";
+        return string.Format("T{0}/T{1} (V{2},V{3},V{4},V{5})", t1, t2, q1, q2, q3, q4);
     }
 }

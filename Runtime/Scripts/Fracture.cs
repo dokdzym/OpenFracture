@@ -35,11 +35,11 @@ public class Fracture : MonoBehaviour
 
         for (int i = 0; i < positions.Length; i++)
         {
-            Debug.Log($"Vertex {i}");
-            Debug.Log($"POS | X: {positions[i].x} Y: {positions[i].y} Z: {positions[i].z}");
-            Debug.Log($"NRM | X: {normals[i].x} Y: {normals[i].y} Z: {normals[i].z} LEN: {normals[i].magnitude}");
-            Debug.Log($"UV  | U: {uvs[i].x} V: {uvs[i].y}");
-            Debug.Log("");
+            Logger.LogF("Vertex {0}", i);
+            Logger.LogF("POS | X: {0} Y: {1} Z: {2}", positions[i].x, positions[i].y, positions[i].y, positions[i].z);
+            Logger.LogF("NRM | X: {0} Y: {1} Z: {2} LEN: {3}", normals[i].x, normals[i].y, normals[i].z, normals[i].magnitude);
+            Logger.LogF("UV  | U: {0} V: {1}", uvs[i].x, uvs[i].y);
+            Logger.LogF("");
         }
     }
 
@@ -59,7 +59,7 @@ public class Fracture : MonoBehaviour
             var scale = this.transform.parent.localScale;
             if ((scale.x != scale.y) || (scale.x != scale.z) || (scale.y != scale.z))
             {
-                Debug.LogWarning($"Warning: Parent transform of fractured object must be uniformly scaled in all axes or fragments will not render correctly.", this.transform);
+                Logger.LogWarningF("Warning: Parent transform of fractured object must be uniformly scaled in all axes or fragments will not render correctly.{0}", this.transform);
             }
         }
     }
@@ -68,7 +68,7 @@ public class Fracture : MonoBehaviour
     {
         if (triggerOptions.triggerType == TriggerType.Collision)
         {
-            if (collision.contactCount > 0)
+            if (collision.contacts.Length > 0)
             {
                 // Collision force must exceed the minimum force (F = I / T)
                 var contact = collision.contacts[0];
@@ -116,6 +116,7 @@ public class Fracture : MonoBehaviour
         }
     }
 
+    [AutoProfiling(Group = "Fracture", MaxStackDepth = 15)]
     /// <summary>
     /// Compute the fracture and create the fragments
     /// </summary>
@@ -130,7 +131,7 @@ public class Fracture : MonoBehaviour
             if (this.fragmentRoot == null)
             {
                 // Create a game object to contain the fragments
-                this.fragmentRoot = new GameObject($"{this.name}Fragments");
+                this.fragmentRoot = new GameObject(string.Format("{0}Fragments", this.name));
                 this.fragmentRoot.transform.SetParent(this.transform.parent);
 
                 // Each fragment will handle its own scale
@@ -218,11 +219,7 @@ public class Fracture : MonoBehaviour
         };
 
         // Copy collider properties to fragment
-        var thisCollider = this.GetComponent<Collider>();
-        var fragmentCollider = obj.AddComponent<MeshCollider>();
-        fragmentCollider.convex = true;
-        fragmentCollider.sharedMaterial = thisCollider.sharedMaterial;
-        fragmentCollider.isTrigger = thisCollider.isTrigger;
+        AddColliderComponent(obj);
 
         // Copy rigid body properties to fragment
         var thisRigidBody = this.GetComponent<Rigidbody>();
@@ -241,6 +238,28 @@ public class Fracture : MonoBehaviour
         }
 
         return obj;
+    }
+
+    public void AddColliderComponent(GameObject obj)
+    {
+        var thisCollider = this.GetComponent<Collider>();
+        if (fractureOptions.colliderType == FractureOptions.ColliderOption.Mesh)
+        {
+            var fragmentCollider = obj.AddComponent<MeshCollider>();
+            fragmentCollider.convex = true;
+            fragmentCollider.sharedMaterial = thisCollider.sharedMaterial;
+            fragmentCollider.isTrigger = thisCollider.isTrigger;
+        }
+        else if (fractureOptions.colliderType == FractureOptions.ColliderOption.Box)
+        {
+            var fragmentCollider = obj.AddComponent<BoxCollider>();
+            fragmentCollider.sharedMaterial = thisCollider.sharedMaterial;
+            fragmentCollider.isTrigger = thisCollider.isTrigger;
+        }
+        else if (fractureOptions.colliderType == FractureOptions.ColliderOption.None)
+        {
+            //do nothing
+        }
     }
 
     /// <summary>

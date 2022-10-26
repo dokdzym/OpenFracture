@@ -254,28 +254,40 @@ public class FragmentData
         return this.Triangles[subMeshIndex].ToArray();
     }
 
+    private Vector3 cachedCalculateBounds_min = Vector3.zero;
+    private Vector3 cachedCalculateBounds_max = Vector3.zero;
     /// <summary>
     /// Calculates the bounds of the mesh data
     /// </summary>
     public void CalculateBounds()
     {
         float vertexCount = (float)Vertices.Count;
-        Vector3 min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
-        Vector3 max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+        //before optimization: new vector2 on every loop
+//        Vector3 min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+//        Vector3 max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+        cachedCalculateBounds_min.x = float.MaxValue;
+        cachedCalculateBounds_min.y = float.MaxValue;
+        cachedCalculateBounds_min.z = float.MaxValue;
+        cachedCalculateBounds_max.x = float.MinValue;
+        cachedCalculateBounds_max.y = float.MinValue;
+        cachedCalculateBounds_max.z = float.MinValue;
 
         // The cut face does not modify the extents of the object, so we only need to
         // loop through the original vertices to determine the bounds
         foreach(MeshVertex vertex in Vertices)
         {
-            if (vertex.position.x < min.x) min.x = vertex.position.x;
-            if (vertex.position.y < min.y) min.y = vertex.position.y;
-            if (vertex.position.z < min.z) min.z = vertex.position.z;
-            if (vertex.position.x > max.x) max.x = vertex.position.x;
-            if (vertex.position.y > max.y) max.y = vertex.position.y;
-            if (vertex.position.z > max.z) max.z = vertex.position.z;
+            if (vertex.position.x < cachedCalculateBounds_min.x) cachedCalculateBounds_min.x = vertex.position.x;
+            if (vertex.position.y < cachedCalculateBounds_min.y) cachedCalculateBounds_min.y = vertex.position.y;
+            if (vertex.position.z < cachedCalculateBounds_min.z) cachedCalculateBounds_min.z = vertex.position.z;
+            if (vertex.position.x > cachedCalculateBounds_max.x) cachedCalculateBounds_max.x = vertex.position.x;
+            if (vertex.position.y > cachedCalculateBounds_max.y) cachedCalculateBounds_max.y = vertex.position.y;
+            if (vertex.position.z > cachedCalculateBounds_max.z) cachedCalculateBounds_max.z = vertex.position.z;
         }
 
-        this.Bounds = new Bounds((max + min) / 2f, max - min);
+        //before optimization
+//        this.Bounds = new Bounds((cachedCalculateBounds_max + cachedCalculateBounds_min) / 2f, cachedCalculateBounds_max - cachedCalculateBounds_min);
+        Bounds.center = (cachedCalculateBounds_max + cachedCalculateBounds_min) / 2f;
+        Bounds.size = cachedCalculateBounds_max - cachedCalculateBounds_min;
     }
 
     /// <summary>
@@ -286,30 +298,70 @@ public class FragmentData
     {
         Mesh mesh = new Mesh();
         
-        var layout = new[]
-        {
-            new VertexAttributeDescriptor(VertexAttribute.Position, VertexAttributeFormat.Float32, 3),
-            new VertexAttributeDescriptor(VertexAttribute.Normal, VertexAttributeFormat.Float32, 3),
-            new VertexAttributeDescriptor(VertexAttribute.TexCoord0, VertexAttributeFormat.Float32, 2),
-        };
+//        var layout = new[]
+//        {
+//            new VertexAttributeDescriptor(VertexAttribute.Position, VertexAttributeFormat.Float32, 3),
+//            new VertexAttributeDescriptor(VertexAttribute.Normal, VertexAttributeFormat.Float32, 3),
+//            new VertexAttributeDescriptor(VertexAttribute.TexCoord0, VertexAttributeFormat.Float32, 2),
+//        };
 
-        mesh.SetIndexBufferParams(triangleCount, IndexFormat.UInt32);
-        mesh.SetVertexBufferParams(vertexCount, layout);
-        mesh.SetVertexBufferData(Vertices, 0, 0, Vertices.Count);
-        mesh.SetVertexBufferData(CutVertices, 0, Vertices.Count, CutVertices.Count);
+        //brando old
+//        mesh.SetIndexBufferParams(triangleCount, IndexFormat.UInt32);
+//        mesh.SetVertexBufferParams(vertexCount, layout);
+//        mesh.SetVertexBufferData(Vertices, 0, 0, Vertices.Count);
+//        mesh.SetVertexBufferData(CutVertices, 0, Vertices.Count, CutVertices.Count);
+        //brando new 
+
+        List<MeshVertex> total = new List<MeshVertex>();
+        total.AddRange(Vertices);
+        total.AddRange(CutVertices);
+       
+        SetVertexData(total, mesh);
 
         mesh.subMeshCount = Triangles.Length;
         int indexStart = 0;
         for(int i = 0; i < Triangles.Length; i++)
         {
-            var subMeshIndexBuffer = Triangles[i];
-            mesh.SetIndexBufferData(subMeshIndexBuffer, 0, indexStart, subMeshIndexBuffer.Count);
-            mesh.SetSubMesh(i, new SubMeshDescriptor(indexStart, subMeshIndexBuffer.Count));
-            indexStart += subMeshIndexBuffer.Count;
+//            var subMeshIndexBuffer = Triangles[i];
+//            mesh.SetIndexBufferData(subMeshIndexBuffer, 0, indexStart, subMeshIndexBuffer.Count);
+//            mesh.SetSubMesh(i, new SubMeshDescriptor(indexStart, subMeshIndexBuffer.Count));
+//            indexStart += subMeshIndexBuffer.Count;
+
+            mesh.SetTriangles(Triangles[i], i, false);
         }
         
         mesh.RecalculateBounds();
         
         return mesh;
+    }
+    
+    public void SetVertexData(List<MeshVertex> list, Mesh mesh)
+    {
+        if (mesh == null || list == null)
+            return;
+        
+        //设置位置
+        var vertPos = new List<Vector3>();
+        for (int i = 0; i < list.Count; ++i)
+        {
+            vertPos.Add(list[i].position);
+        }
+        mesh.SetVertices(vertPos);
+        
+        //设置法线
+        var vertNormal = new List<Vector3>();
+        for (int i = 0; i < list.Count; ++i)
+        {
+            vertNormal.Add(list[i].normal);
+        }
+        mesh.SetNormals(vertNormal);
+        
+        //设置UV
+        var vertUV = new List<Vector2>();
+        for (int i = 0; i < list.Count; ++i)
+        {
+            vertUV.Add(list[i].uv);
+        }
+        mesh.SetUVs(0, vertUV);
     }
 }

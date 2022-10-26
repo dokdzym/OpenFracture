@@ -11,7 +11,8 @@ public class FractureOptionsPropertyDrawer : PropertyDrawer
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
     {
         EditorGUI.indentLevel = 0;
-        foldout = EditorGUILayout.BeginFoldoutHeaderGroup(foldout, label);
+//        foldout = EditorGUILayout.BeginFoldoutHeaderGroup(foldout, label);
+        foldout = EditorGUILayout.BeginToggleGroup("FractureOptionsPropertyDrawer", foldout);
 
         if (foldout)
         {
@@ -26,9 +27,11 @@ public class FractureOptionsPropertyDrawer : PropertyDrawer
             EditorGUILayout.PropertyField(property.FindPropertyRelative("insideMaterial"));
             EditorGUILayout.PropertyField(property.FindPropertyRelative("textureScale"));
             EditorGUILayout.PropertyField(property.FindPropertyRelative("textureOffset"));
+            EditorGUILayout.PropertyField(property.FindPropertyRelative("colliderType"));
         }
 
-        EditorGUILayout.EndFoldoutHeaderGroup();
+//        EditorGUILayout.EndFoldoutHeaderGroup();
+//        EditorGUILayout.EndFoldoutHeaderGroup();
         EditorGUI.indentLevel = 0;
     }
     

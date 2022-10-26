@@ -46,9 +46,8 @@ public struct MeshVertex
         return this.position.GetHashCode();
     }
 
-    [ExcludeFromCoverage]
     public override string ToString()
     {
-        return $"Position = {position}, Normal = {normal}, UV = {uv}";
+        return string.Format("Position = {0}, Normal = {1}, UV = {2}", position, normal, uv);
     }
 }

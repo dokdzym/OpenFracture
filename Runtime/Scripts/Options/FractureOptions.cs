@@ -34,6 +34,17 @@ public class FractureOptions
 
     [Tooltip("Offset to apply to texture coordinates")]
     public Vector2 textureOffset;
+    
+    [Tooltip("Use which collider")]
+    public ColliderOption colliderType = ColliderOption.Mesh;
+
+    [Serializable]
+    public enum ColliderOption
+    {
+        Mesh,
+        Box,
+        None,
+    }
 
     public FractureOptions()
     {

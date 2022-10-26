@@ -9,15 +9,24 @@ public class CallbackOptionsPropertyDrawer : PropertyDrawer
     // Draw the property inside the given rect
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
     {
-        foldout = EditorGUILayout.BeginFoldoutHeaderGroup(foldout, label);
-
-        if (foldout)
+//        foldout = EditorGUILayout.BeginFoldoutHeaderGroup(foldout, label);
+        foldout = EditorGUILayout.BeginToggleGroup("CallbackOptionsPropertyDrawer", foldout);
+        
+//        if (foldout)
         {
-            EditorGUILayout.PropertyField(property.FindPropertyRelative("onFracture"));
-            EditorGUILayout.PropertyField(property.FindPropertyRelative("onCompleted"));
+            var prop1 = property.FindPropertyRelative("onFracture");
+            if(prop1 != null)
+                EditorGUILayout.PropertyField(prop1);
+            
+            var prop2 = property.FindPropertyRelative("onCompleted");
+            if(prop2 != null)
+                EditorGUILayout.PropertyField(property.FindPropertyRelative("onCompleted"));
+            else
+                Logger.LogErrorF("cannot find onCompleted");
         }
         
-        EditorGUILayout.EndFoldoutHeaderGroup();
+        EditorGUILayout.EndToggleGroup();
+//        EditorGUILayout.EndFoldoutHeaderGroup();
     }
     
     // Hack to prevent extra space at top of property drawer. This is due to using EditorGUILayout

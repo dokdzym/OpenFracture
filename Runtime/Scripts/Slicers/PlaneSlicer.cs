@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.TestTools;
 
-[ExcludeFromCoverage]
 public class PlaneSlicer : MonoBehaviour
 {
     public float RotationSensitivity = 1f;
@@ -57,7 +56,12 @@ public class PlaneSlicer : MonoBehaviour
 
                 if (sliceObj != null)
                 {
-                    sliceObj.GetComponent<MeshRenderer>()?.material.SetVector("CutPlaneOrigin", Vector3.positiveInfinity);
+                    var meshRenderer = sliceObj.GetComponent<MeshRenderer>();
+                    if (meshRenderer != null)
+                    {
+                        meshRenderer.material.SetVector("CutPlaneOrigin", Vector3.positiveInfinity);
+                    }
+                    
                     sliceObj.ComputeSlice(this.transform.up, this.transform.position);
                 }
             }

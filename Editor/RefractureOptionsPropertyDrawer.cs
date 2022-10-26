@@ -15,17 +15,22 @@ public class RefractureOptionsPropertyDrawer : PropertyDrawer
         var invokeCallbacks = property.FindPropertyRelative("invokeCallbacks");
 
         EditorGUI.indentLevel = 0;
-        foldout = EditorGUILayout.BeginFoldoutHeaderGroup(foldout, label);
+//        foldout = EditorGUILayout.BeginFoldoutHeaderGroup(foldout, label);
+        foldout = EditorGUILayout.BeginToggleGroup("RefractureOptionsPropertyDrawer", foldout);
 
         if (foldout)
         {
             EditorGUI.indentLevel = 1;
-            EditorGUILayout.PropertyField(enableRefracturing, new GUIContent("Enabled"));
-            EditorGUILayout.PropertyField(invokeCallbacks, new GUIContent("Invoke Callbacks"));
-            EditorGUILayout.PropertyField(maxRefractureCount, new GUIContent("Max # of Refractures"));
+            if(enableRefracturing != null)
+                EditorGUILayout.PropertyField(enableRefracturing, new GUIContent("Enabled"));
+            if(invokeCallbacks != null)
+                EditorGUILayout.PropertyField(invokeCallbacks, new GUIContent("Invoke Callbacks"));
+            if(maxRefractureCount != null)
+                EditorGUILayout.PropertyField(maxRefractureCount, new GUIContent("Max # of Refractures"));
         }
 
-        EditorGUILayout.EndFoldoutHeaderGroup();
+//        EditorGUILayout.EndFoldoutHeaderGroup();
+        EditorGUILayout.EndToggleGroup();
         EditorGUI.indentLevel = 0;
     }
     

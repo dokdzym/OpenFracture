@@ -22,7 +22,7 @@ public class UnfreezeFragment : MonoBehaviour
             return;
         }
 
-        if (collision.contactCount > 0)
+        if (collision.contacts.Length > 0)
         {
             // Collision force must exceed the minimum force (F = I / T = F)
             var contact = collision.contacts[0];

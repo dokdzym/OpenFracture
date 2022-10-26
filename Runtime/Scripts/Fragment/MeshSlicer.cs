@@ -58,6 +58,7 @@ public static class MeshSlicer
         FillCutFaces(topSlice, bottomSlice, -sliceNormal, textureScale, textureOffset);
     }
 
+    private static Vector2 cachedFillCutFaces_uv = Vector2.zero;
     /// <summary>
     /// Fills the cut faces for each sliced mesh. The `sliceNormal` is the normal for the plane and points
     /// in the direction of `topMeshData`
@@ -88,6 +89,7 @@ public static class MeshSlicer
         int[] triangles = triangulator.Triangulate();
 
         // Update normal and UV for the cut face vertices
+//        Logger.LogWarningF("brando gc FillCutFaces called, vector2 cnt = {0}", topSlice.CutVertices.Count);
         for (int i = 0; i < topSlice.CutVertices.Count; i++)
         {
             var vertex = topSlice.CutVertices[i];
@@ -96,18 +98,23 @@ public static class MeshSlicer
             // UV coordinates are based off of the 2D coordinates used for triangulation
             // During triangulation, coordinates are normalized to [0,1], so need to multiply
             // by normalization scale factor to get back to the appropritate scale
-            Vector2 uv = new Vector2(
-                (triangulator.normalizationScaleFactor * point.coords.x) * textureScale.x + textureOffset.x,
-                (triangulator.normalizationScaleFactor * point.coords.y) * textureScale.y + textureOffset.y);
+            
+            //before optimization: new vector2 on every loop
+//            Vector2 uv = new Vector2(
+//                (triangulator.normalizationScaleFactor * point.coords.x) * textureScale.x + textureOffset.x,
+//                (triangulator.normalizationScaleFactor * point.coords.y) * textureScale.y + textureOffset.y);
+
+            cachedFillCutFaces_uv.x = (triangulator.normalizationScaleFactor * point.coords.x) * textureScale.x + textureOffset.x;
+            cachedFillCutFaces_uv.y = (triangulator.normalizationScaleFactor * point.coords.y) * textureScale.y + textureOffset.y;
 
             // Update normals and UV coordinates for the cut vertices
             var topVertex = vertex;
             topVertex.normal = sliceNormal;
-            topVertex.uv = uv;
+            topVertex.uv = cachedFillCutFaces_uv;
 
             var bottomVertex = vertex;
             bottomVertex.normal = -sliceNormal;
-            bottomVertex.uv = uv;
+            bottomVertex.uv = cachedFillCutFaces_uv;
 
             topSlice.CutVertices[i] = topVertex;
             bottomSlice.CutVertices[i] = bottomVertex;

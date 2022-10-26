@@ -408,6 +408,24 @@ public sealed class ConstrainedTriangulator : Triangulator
         }
     }
 
+    public bool HashSetContains(ref HashSet<EdgeConstraint> set, int v1, int v2) 
+    {
+        if (set == null)
+            return false;
+
+        foreach (var i in set)
+        {
+            if (i.v1 == v1 && i.v2 == v2)
+                return true;
+        }
+
+        return false;
+    }
+
+    public void Add2Set(HashSet<EdgeConstraint> set, int v1, int v2)
+    {
+    }
+
     /// <summary>
     /// Discards triangles that violate the any of the edge constraints
     /// </summary>
@@ -420,11 +438,11 @@ public sealed class ConstrainedTriangulator : Triangulator
         }
 
         // Identify the boundary edges
-        HashSet < (int, int) > boundaries = new HashSet < (int, int) > ();
+        HashSet <EdgeConstraint> boundaries = new HashSet < EdgeConstraint > ();
         for (int i = 0; i < this.constraints.Count; i++)
         {
             EdgeConstraint constraint = this.constraints[i];
-            boundaries.Add((constraint.v1, constraint.v2));
+            boundaries.Add(constraint);
         }
 
         // Reset visited states
@@ -449,9 +467,13 @@ public sealed class ConstrainedTriangulator : Triangulator
             v1 = triangulation[i, V1];
             v2 = triangulation[i, V2];
             v3 = triangulation[i, V3];
-            boundaryE12 = boundaries.Contains((v1, v2));
-            boundaryE23 = boundaries.Contains((v2, v3));
-            boundaryE31 = boundaries.Contains((v3, v1));
+//            boundaryE12 = boundaries.Contains((v1, v2));
+//            boundaryE23 = boundaries.Contains((v2, v3));
+//            boundaryE31 = boundaries.Contains((v3, v1));
+//
+            boundaryE12 = HashSetContains(ref boundaries, v1, v2);
+            boundaryE23 = HashSetContains(ref boundaries, v2, v3);
+            boundaryE31 = HashSetContains(ref boundaries, v3, v1);
 
             // If this triangle has a boundary edge, start searching for adjacent triangles
             if (boundaryE12 || boundaryE23 || boundaryE31)
@@ -492,15 +514,15 @@ public sealed class ConstrainedTriangulator : Triangulator
                     v3 = triangulation[k, V3];
 
                     // Continue searching along non-boundary edges
-                    if (!boundaries.Contains((v1, v2)))
+                    if (!boundaryE12)
                     {
                         frontier.Enqueue(triangulation[k, E12]);
                     }
-                    if (!boundaries.Contains((v2, v3)))
+                    if (!boundaryE23)
                     {
                         frontier.Enqueue(triangulation[k, E23]);
                     }
-                    if (!boundaries.Contains((v3, v1)))
+                    if (!boundaryE31)
                     {
                         frontier.Enqueue(triangulation[k, E31]);
                     }

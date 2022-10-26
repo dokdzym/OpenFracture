@@ -27,7 +27,7 @@ public class Prefracture : MonoBehaviour
             var scale = this.transform.parent.localScale;
             if ((scale.x != scale.y) || (scale.x != scale.z) || (scale.y != scale.z))
             {
-                Debug.LogWarning($"Warning: Parent transform of fractured object must be uniformly scaled in all axes or fragments will not render correctly.", this.transform);
+                Logger.LogWarningF("Warning: Parent transform of fractured object must be uniformly scaled in all axes or fragments will not render correctly. {0}", this.transform);
             }
         }
     }
@@ -51,7 +51,7 @@ public class Prefracture : MonoBehaviour
             if (this.fragmentRoot == null)
             {
                 // Create a game object to contain the fragments
-                this.fragmentRoot = new GameObject($"{this.name}Fragments");
+                this.fragmentRoot = new GameObject(string.Format("{0}Fragments", this.name));
                 this.fragmentRoot.transform.SetParent(this.transform.parent);
 
                 // Each fragment will handle its own scale
@@ -106,11 +106,7 @@ public class Prefracture : MonoBehaviour
         };
 
         // Copy collider properties to fragment
-        var thisCollider = this.GetComponent<Collider>();
-        var fragmentCollider = obj.AddComponent<MeshCollider>();
-        fragmentCollider.convex = true;
-        fragmentCollider.sharedMaterial = thisCollider.sharedMaterial;
-        fragmentCollider.isTrigger = thisCollider.isTrigger;
+        AddColliderComponent(obj);
 
         // Copy rigid body properties to fragment
         var rigidBody = obj.AddComponent<Rigidbody>();
@@ -126,5 +122,27 @@ public class Prefracture : MonoBehaviour
         unfreeze.onFractureCompleted = callbackOptions.onCompleted;
         
         return obj;
+    }
+    
+    public void AddColliderComponent(GameObject obj)
+    {
+        var thisCollider = this.GetComponent<Collider>();
+        if (fractureOptions.colliderType == FractureOptions.ColliderOption.Mesh)
+        {
+            var fragmentCollider = obj.AddComponent<MeshCollider>();
+            fragmentCollider.convex = true;
+            fragmentCollider.sharedMaterial = thisCollider.sharedMaterial;
+            fragmentCollider.isTrigger = thisCollider.isTrigger;
+        }
+        else if (fractureOptions.colliderType == FractureOptions.ColliderOption.Box)
+        {
+            var fragmentCollider = obj.AddComponent<BoxCollider>();
+            fragmentCollider.sharedMaterial = thisCollider.sharedMaterial;
+            fragmentCollider.isTrigger = thisCollider.isTrigger;
+        }
+        else if (fractureOptions.colliderType == FractureOptions.ColliderOption.None)
+        {
+            //do nothing
+        }
     }
 }

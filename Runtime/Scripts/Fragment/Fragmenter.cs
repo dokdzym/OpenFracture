@@ -26,7 +26,8 @@ public static class Fragmenter
                                 GameObject fragmentTemplate,
                                 Transform parent,
                                 bool saveToDisk = false,
-                                string saveFolderPath = "")
+                                string saveFolderPath = ""
+                                )
     {
         // Define our source mesh data for the fracturing
         FragmentData sourceMesh = new FragmentData(sourceObject.GetComponent<MeshFilter>().sharedMesh);
@@ -72,7 +73,8 @@ public static class Fragmenter
                            saveToDisk,
                            saveFolderPath,
                            options.detectFloatingFragments,
-                           ref i);
+                           ref i,
+                           options.colliderType);
         }
     }
 
@@ -138,10 +140,12 @@ public static class Fragmenter
                            false,
                            "",
                            options.detectFloatingFragments,
-                           ref i);
+                           ref i,
+                           options.colliderType);
         }
 
-        onCompletion?.Invoke();
+        if(onCompletion != null)
+            onCompletion.Invoke();
     }
 
     /// <summary>
@@ -184,7 +188,8 @@ public static class Fragmenter
                        false,
                        "",
                        options.detectFloatingFragments,
-                       ref i);
+                       ref i, 
+                       FractureOptions.ColliderOption.Mesh);
 
         CreateFragment(bottomSlice,
                        sourceObject,
@@ -193,7 +198,8 @@ public static class Fragmenter
                        false,
                        "",
                        options.detectFloatingFragments,
-                       ref i);
+                       ref i, 
+                       FractureOptions.ColliderOption.Mesh);
     }
 
     /// <summary>
@@ -211,7 +217,8 @@ public static class Fragmenter
                                        bool saveToDisk,
                                        string saveFolderPath,
                                        bool detectFloatingFragments,
-                                       ref int i)
+                                       ref int i,
+                                       FractureOptions.ColliderOption opt)
     {
         // If there is no mesh data, don't create an object
         if (fragmentMeshData.Triangles.Length == 0)
@@ -227,7 +234,8 @@ public static class Fragmenter
         // separate physical object
         if (detectFloatingFragments)
         {
-            meshes = MeshUtils.FindDisconnectedMeshes(fragmentMesh);
+//            meshes = MeshUtils.FindDisconnectedMeshes(fragmentMesh); //brandotodo
+            meshes = new Mesh[] { fragmentMesh }; //brandotodo delete
         }
         else
         {
@@ -240,7 +248,7 @@ public static class Fragmenter
         for(int k = 0; k < meshes.Length; k++)
         {
             GameObject fragment = GameObject.Instantiate(fragmentTemplate, parent);
-            fragment.name = $"Fragment{i}";
+            fragment.name = string.Format("Fragment{0}", i);
             fragment.transform.localPosition = Vector3.zero;
             fragment.transform.localRotation = Quaternion.identity;
             fragment.transform.localScale = sourceObject.transform.localScale;
@@ -251,12 +259,27 @@ public static class Fragmenter
             var meshFilter = fragment.GetComponent<MeshFilter>();
             meshFilter.sharedMesh = meshes[k];
 
-            var collider = fragment.GetComponent<MeshCollider>();
+            if (opt == FractureOptions.ColliderOption.Mesh)
+            {
+                var collider = fragment.GetComponent<MeshCollider>();
 
-            // If fragment collisions are disabled, collider will be null
-            collider.sharedMesh = meshes[k];
-            collider.convex = true;
-            collider.sharedMaterial = fragment.GetComponent<Collider>().sharedMaterial;
+                // If fragment collisions are disabled, collider will be null
+                collider.sharedMesh = meshes[k];
+                collider.convex = true;
+                collider.sharedMaterial = fragment.GetComponent<Collider>().sharedMaterial;
+            }
+            else if(opt == FractureOptions.ColliderOption.Box)
+            {
+                var collider = fragment.GetComponent<BoxCollider>();
+
+                // If fragment collisions are disabled, collider will be null
+                collider.sharedMaterial = fragment.GetComponent<Collider>().sharedMaterial;
+            }
+            else if (opt == FractureOptions.ColliderOption.None)
+            {
+                
+            }
+            
 
             // Compute mass of the sliced object by dividing mesh bounds by density
             var parentRigidBody = sourceObject.GetComponent<Rigidbody>();
@@ -270,7 +293,7 @@ public static class Fragmenter
             #if UNITY_EDITOR
             if (saveToDisk)
             {
-                string path = $"{saveFolderPath}/{meshes[k].name}.asset";
+                string path = string.Format("{0}/{1}.asset", saveFolderPath, meshes[k].name);
                 AssetDatabase.CreateAsset(meshes[k], path);
             }
             #endif

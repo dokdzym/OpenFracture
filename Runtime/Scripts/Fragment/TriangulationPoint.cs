@@ -32,9 +32,8 @@ public class TriangulationPoint: IBinSortable
         this.coords = coords;
     }
 
-    [ExcludeFromCoverage]
     public override string ToString()
     {
-        return $"{coords} -> {bin}";
+        return string.Format("{0} -> {1}", coords, bin);
     }
 }

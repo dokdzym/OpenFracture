@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.TestTools;
 
-[ExcludeFromCoverage]
 public class Projectile : MonoBehaviour
 {
     public GameObject projectile;

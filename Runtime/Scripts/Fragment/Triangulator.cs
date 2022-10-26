@@ -325,6 +325,18 @@ public class Triangulator
         RestoreDelauneyTriangulation(p, t1, t2, t3);
     }
 
+    public struct DoubleIntTuple
+    {
+        public int x;
+        public int y;
+
+        public DoubleIntTuple(int _x, int _y)
+        {
+            x = _x;
+            y = _y;
+        }
+    }
+
     /// <summary>
     /// Restores the triangulation to a Delauney triangulation after new triangles have been added.
     /// </summary>
@@ -335,18 +347,23 @@ public class Triangulator
     protected void RestoreDelauneyTriangulation(TriangulationPoint p, int t1, int t2, int t3)
     {
         int t4;
-        Stack < (int, int) > s = new Stack < (int, int) > ();
+//        Stack < (int, int) > s = new Stack < (int, int) > ();
+        Stack <DoubleIntTuple> s = new Stack <DoubleIntTuple> ();
 
-        s.Push((t1, triangulation[t1, E23]));
-        s.Push((t2, triangulation[t2, E23]));
-        s.Push((t3, triangulation[t3, E23]));
+        s.Push(new DoubleIntTuple(t1, triangulation[t1, E23]));
+        s.Push(new DoubleIntTuple(t2, triangulation[t2, E23]));
+        s.Push(new DoubleIntTuple(t3, triangulation[t3, E23]));
         
         while (s.Count > 0)
         {
             // Pop next triangle and its adjacent triangle off the stack
             // t1 contains the newly added vertex at V1
             // t2 is adjacent to t1 along the opposite edge of V1
-            (t1, t2) = s.Pop();
+            
+//            (t1, t2) = s.Pop();
+            DoubleIntTuple top = s.Pop();
+            t1 = top.x;
+            t2 = top.y;
 
             if (t2 == OUT_OF_BOUNDS)
             {
@@ -358,8 +375,8 @@ public class Triangulator
             {
                 // Push newly formed triangles onto the stack to see if their diagonals
                 // need to be swapped
-                s.Push((t1, t3));
-                s.Push((t2, t4));
+                s.Push(new DoubleIntTuple(t1, t3));
+                s.Push(new DoubleIntTuple(t2, t4));
             }
         }
     }

@@ -18,7 +18,8 @@ public class TriggerOptionsPropertyDrawer : PropertyDrawer
         var triggerAllowedTags = property.FindPropertyRelative("triggerAllowedTags");
 
         EditorGUI.indentLevel = 0;
-        foldout = EditorGUILayout.BeginFoldoutHeaderGroup(foldout, label);
+//        foldout = EditorGUILayout.BeginFoldoutHeaderGroup(foldout, label);
+        foldout = EditorGUILayout.BeginToggleGroup("TriggerOptionsPropertyDrawer", foldout);
 
         if (foldout)
         {
@@ -32,13 +33,15 @@ public class TriggerOptionsPropertyDrawer : PropertyDrawer
                     EditorGUILayout.PropertyField(filterCollisionsByTag, new GUIContent("Limit collisions to selected tags?"));
                     if (filterCollisionsByTag.boolValue)
                     {
-                        EditorGUILayout.EndFoldoutHeaderGroup();
+//                        EditorGUILayout.EndFoldoutHeaderGroup();
+                        EditorGUILayout.EndToggleGroup();
                         EditorGUILayout.PropertyField(triggerAllowedTags, new GUIContent("Included Tags"));
                     }
                     break;
                 case ((int)TriggerType.Trigger):
                     EditorGUILayout.PropertyField(filterCollisionsByTag);
-                    EditorGUILayout.EndFoldoutHeaderGroup();
+//                    EditorGUILayout.EndFoldoutHeaderGroup();
+                    EditorGUILayout.EndToggleGroup();
                     EditorGUILayout.PropertyField(triggerAllowedTags);
                     break;
                 case ((int)TriggerType.Keyboard):
@@ -47,7 +50,8 @@ public class TriggerOptionsPropertyDrawer : PropertyDrawer
             }
         }
 
-        EditorGUILayout.EndFoldoutHeaderGroup();
+//        EditorGUILayout.EndFoldoutHeaderGroup();
+        EditorGUILayout.EndToggleGroup();
         EditorGUI.indentLevel = 0;
     }
 
